@@ -1,0 +1,6 @@
+flake8==7.3.0
+mypy==1.20.1
+pyflakes==3.4.0
+pycodestyle==2.14.0
+pytest==9.0.3
+typing_extensions==4.15.0
