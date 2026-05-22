@@ -56,7 +56,13 @@ class Simulation:
         return (b, a)
 
     def _zone_free(self, zone: str, turn: int) -> bool:
-        """Check if the zone has free capacity at a given turn."""
+        """Check if the zone has free capacity at a given turn.
+
+        Start and end hubs have infinite capacity as per occupancy rules.
+        """
+        if (zone == self.map_data.start_hub.name
+                or zone == self.map_data.end_hub.name):
+            return True
         used = self.occ_zone.get(zone, {}).get(turn, 0)
         return used < self.map_data.zones[zone].max_drones
 

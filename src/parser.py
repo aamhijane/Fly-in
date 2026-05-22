@@ -22,17 +22,48 @@ from src.models import Zone, Connection, MapData, ZoneType
 
 
 class ParserError(Exception):
+    """
+    Exception raised for errors during parsing.
+    """
+
     def __init__(self, line: int, message: str) -> None:
+        """
+        Initialize the ParserError exception.
+
+        Args:
+            line: Line number where the error occurred
+            message: Error message
+        """
         self.line = line
         self.message = message
         super().__init__(f"Error on line {line}: {message}")
 
 
 def is_empty_or_comment(line: str) -> bool:
+    """
+    Check if a line is empty or a comment.
+
+    Args:
+        line: Line to check
+
+    Returns:
+        True if the line is empty or a comment, False otherwise
+    """
+
     return line == "" or line.startswith("#")
 
 
 def parse_nb_drones(line: str, line_num: int) -> int:
+    """
+    Parse the number of drones from a line.
+
+    Args:
+        line: Line to parse
+        line_num: Line number for error reporting
+
+    Returns:
+        Number of drones
+    """
     parts = line.split(":", 1)
     if len(parts) != 2:
         raise ParserError(line_num, "Invalid nb_drones format")
@@ -53,6 +84,16 @@ def parse_nb_drones(line: str, line_num: int) -> int:
 
 
 def split_metadata(line: str) -> tuple[Optional[str], str]:
+    """
+    Split a line into metadata and the rest of the line.
+
+    Args:
+        line: Line to split
+
+    Returns:
+        Tuple of (metadata, rest of line)
+    """
+
     start = line.find("[")
     if start == -1:
         return None, line.strip()
@@ -65,18 +106,40 @@ def split_metadata(line: str) -> tuple[Optional[str], str]:
 
 
 def read_metadata(meta_str: Optional[str]) -> dict[str, str]:
+    """
+    Parse metadata string into key-value pairs.
+
+    Args:
+        meta_str: Metadata string (e.g., "max_drones=5 color=red")
+
+    Returns:
+        Dictionary of metadata
+    """
     result: dict[str, str] = {}
+
     if meta_str is None:
         return result
+
     for pair in meta_str.split():
         if "=" not in pair:
             continue
         k, v = pair.split("=", 1)
         result[k] = v
+
     return result
 
 
 def zone_name_is_valid(name: str) -> bool:
+    """
+    Check if zone name is valid (no hyphens or spaces).
+
+    Args:
+        name: Zone name to check
+
+    Returns:
+        True if zone name is valid, False otherwise
+    """
+
     if "-" in name:
         return False
     if " " in name:
@@ -85,6 +148,15 @@ def zone_name_is_valid(name: str) -> bool:
 
 
 def zone_name_error(name: str) -> str:
+    """
+    Get error message for invalid zone name.
+
+    Args:
+        name: Zone name that is invalid
+
+    Returns:
+        Error message
+    """
     if "-" in name:
         return f"Zone name '{name}' contains invalid character '-'"
     if " " in name:
@@ -93,10 +165,30 @@ def zone_name_error(name: str) -> str:
 
 
 def is_duplicate_zone(name: str, zones: dict[str, Zone]) -> bool:
+    """
+    Check if zone name is a duplicate.
+
+    Args:
+        name: Zone name to check
+        zones: Dictionary of existing zones
+
+    Returns:
+        True if zone name is a duplicate, False otherwise
+    """
     return name in zones
 
 
 def zone_type_from_string(s: str) -> Optional[ZoneType]:
+    """
+    Convert zone type string to ZoneType enum.
+
+    Args:
+        s: Zone type string
+        (e.g., "normal", "restricted", "priority", "blocked")
+
+    Returns:
+        ZoneType enum or None if invalid
+    """
     types = {
         "normal": ZoneType.NORMAL,
         "restricted": ZoneType.RESTRICTED,
@@ -108,6 +200,18 @@ def zone_type_from_string(s: str) -> Optional[ZoneType]:
 
 def parse_zone_line(prefix: str, line: str, meta: dict[str, str],
                     line_num: int) -> Zone:
+    """
+    Parse a zone line into a Zone object.
+
+    Args:
+        prefix: Prefix to remove from line (e.g., "zone:")
+        line: Line to parse
+        meta: Metadata dictionary
+        line_num: Line number for error reporting
+
+    Returns:
+        Zone object
+    """
     rest = line[len(prefix):].strip()
     parts = rest.split()
     if len(parts) < 3:
@@ -164,6 +268,18 @@ def parse_zone_line(prefix: str, line: str, meta: dict[str, str],
 
 def parse_connection_line(line: str, meta: dict[str, str],
                           line_num: int) -> Connection:
+    """
+    Parse a connection line into a Connection object.
+
+    Args:
+        line: Line to parse
+        meta: Metadata dictionary
+        line_num: Line number for error reporting
+
+    Returns:
+        Connection object
+    """
+
     rest = line[len("connection:"):].strip()
     if "-" not in rest:
         raise ParserError(
@@ -193,12 +309,33 @@ def parse_connection_line(line: str, meta: dict[str, str],
 
 
 def connection_key(a: str, b: str) -> str:
+    """
+    Generate a canonical key for a connection.
+
+    Args:
+        a: First zone name
+        b: Second zone name
+
+    Returns:
+        Canonical connection key (alphabetical order)
+    """
+
     if a < b:
         return a + "-" + b
     return b + "-" + a
 
 
 def line_type(clean: str) -> str:
+    """
+    Determine the type of a cleaned line.
+
+    Args:
+        clean: Cleaned line (without metadata)
+
+    Returns:
+        Line type ("start_hub", "end_hub", "hub", "connection", or "unknown")
+    """
+
     if clean.startswith("start_hub:"):
         return "start_hub"
     if clean.startswith("end_hub:"):
@@ -212,6 +349,19 @@ def line_type(clean: str) -> str:
 
 def check_zones_exist(a: str, b: str, zones: dict[str, Zone],
                       line_num: int) -> None:
+    """
+    Check if zones a and b exist.
+
+    Args:
+        a: First zone name
+        b: Second zone name
+        zones: Dictionary of existing zones
+        line_num: Line number for error reporting
+
+    Raises:
+        ParserError: If either zone does not exist
+    """
+
     if a not in zones:
         raise ParserError(
             line_num, f"Undefined zone '{a}' in connection"
@@ -223,6 +373,18 @@ def check_zones_exist(a: str, b: str, zones: dict[str, Zone],
 
 
 def add_zone(zones: dict[str, Zone], z: Zone, line_num: int) -> None:
+    """
+    Add a zone to the dictionary of zones.
+
+    Args:
+        zones: Dictionary of existing zones
+        z: Zone object to add
+        line_num: Line number for error reporting
+
+    Raises:
+        ParserError: If zone name is invalid or duplicate
+    """
+
     if not zone_name_is_valid(z.name):
         msg = zone_name_error(z.name)
         raise ParserError(line_num, msg)
@@ -235,6 +397,17 @@ def add_zone(zones: dict[str, Zone], z: Zone, line_num: int) -> None:
 
 def build_adjacency(zones: dict[str, Zone],
                     connections: list[Connection]) -> dict[str, list[str]]:
+    """
+    Build an adjacency list from zones and connections.
+
+    Args:
+        zones: Dictionary of zones
+        connections: List of connections
+
+    Returns:
+        Adjacency list
+    """
+
     adj: dict[str, list[str]] = {name: [] for name in zones}
     for c in connections:
         adj[c.zone_a].append(c.zone_b)
@@ -243,9 +416,35 @@ def build_adjacency(zones: dict[str, Zone],
 
 
 class MapParser:
+    """
+    A parser for map files.
+
+    Attributes:
+        start_hub: The start hub
+        end_hub: The end hub
+        zones: Dictionary of zones
+        connections: List of connections
+        nb_drones: Number of drones
+        nb_drones_line: Line number where number of drones was specified
+        first: Whether it's the first line
+        seen_conns: Dictionary of seen connections
+
+    Methods:
+        parse: Parse a map file
+    """
 
     @staticmethod
     def parse(filepath: str) -> MapData:
+        """
+        Parse a map file.
+
+        Args:
+            filepath: Path to the map file
+
+        Returns:
+            MapData object
+        """
+
         with open(filepath, "r") as f:
             lines = f.readlines()
 

@@ -15,6 +15,13 @@ class Pathfinder:
 
     CONGESTION_PENALTY = 0.02
 
+    COST_MAP = {
+        ZoneType.NORMAL: 1.0,
+        ZoneType.RESTRICTED: 2.0,
+        ZoneType.PRIORITY: 0.9,
+        ZoneType.BLOCKED: 999_999.0,
+    }
+
     def __init__(self, map_data: MapData):
         """Initialise with parsed map data.
 
@@ -47,7 +54,7 @@ class Pathfinder:
     def _dijkstra(self, start: str, goal: str) -> list[str]:
         """Return cheapest path from start to goal as list of zone names.
 
-        Zone costs are: zone_type.value + congestion_penalty * usage_count.
+        Zone costs are: COST_MAP[zone_type] + congestion_penalty * usage_count.
         Start and end hubs are never penalised (all drones share them).
 
         Args:
@@ -65,7 +72,7 @@ class Pathfinder:
         dist: dict[str, float] = {}
         pq: list[tuple[float, str]] = []
 
-        start_cost = self.map_data.zones[start].zone_type.value
+        start_cost = self.COST_MAP[self.map_data.zones[start].zone_type]
         dist[start] = start_cost
         heapq.heappush(pq, (start_cost, start))
 
@@ -92,7 +99,7 @@ class Pathfinder:
                 if neighbor_zone.zone_type == ZoneType.BLOCKED:
                     continue
 
-                base = neighbor_zone.zone_type.value
+                base = self.COST_MAP[neighbor_zone.zone_type]
                 penalty = (self._usage.get(n, 0) * self.CONGESTION_PENALTY
                            if n != start and n != goal else 0.0)
                 new_cost = current_cost + base + penalty

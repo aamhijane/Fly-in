@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 class ZoneType(IntEnum):
     NORMAL = 1
     RESTRICTED = 2
-    PRIORITY = 1
+    PRIORITY = 3
     BLOCKED = 999_999
 
 
