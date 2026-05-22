@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by aamhijane.*
+*This project has been created as part of the 42 curriculum by ayamhija.*
 
 ## Description
 
@@ -25,8 +25,13 @@ resolution, and a terminal-based visualiser with ANSI colour codes.
 ### Installation
 
 ```bash
-# Create and activate a virtual environment (recommended)
+# Create a virtual environment (recommended)
 python3 -m venv .venv
+
+# Or use the Makefile
+make .venv
+
+# Activate it
 source .venv/bin/activate
 
 # Install dependencies
