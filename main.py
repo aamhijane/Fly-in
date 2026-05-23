@@ -2,7 +2,7 @@
 
 import sys
 from src.parser import MapParser, ParserError
-from src.pathfinding import Pathfinder
+from src.pathfinding import Pathfinder, PathfinderError
 from src.simulation import Simulation
 from src.visual import Visualizer
 
@@ -21,7 +21,11 @@ def main() -> None:
         sys.exit(1)
 
     pathfinder = Pathfinder(map_data)
-    pathfinder.compute_paths()
+    try:
+        pathfinder.compute_paths()
+    except PathfinderError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
 
     sim = Simulation(map_data, pathfinder.paths)
     sim.run()

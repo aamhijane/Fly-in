@@ -4,6 +4,11 @@ import heapq
 from src.models import MapData, ZoneType
 
 
+class PathfinderError(Exception):
+    """Exception raised for pathfinding errors."""
+    pass
+
+
 class Pathfinder:
     """Finds cheapest paths from start to goal for all drones.
 
@@ -47,6 +52,11 @@ class Pathfinder:
         for i in range(self.map_data.nb_drones):
             drone_id = i + 1
             path = self._dijkstra(start, goal)
+            if not path:
+                raise PathfinderError(
+                    f"No path exists between start zone '{start}' "
+                    f"and end zone '{goal}'."
+                )
             self.paths[drone_id] = path
             for zone in path:
                 self._usage[zone] = self._usage.get(zone, 0) + 1
