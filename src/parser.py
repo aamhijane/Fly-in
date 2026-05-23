@@ -445,8 +445,11 @@ class MapParser:
             MapData object
         """
 
-        with open(filepath, "r") as f:
-            lines = f.readlines()
+        try:
+            with open(filepath, "r") as f:
+                lines = f.readlines()
+        except FileNotFoundError:
+            raise ParserError(0, f"Map file '{filepath}' does not exist")
 
         start_hub: Optional[Zone] = None
         end_hub: Optional[Zone] = None
