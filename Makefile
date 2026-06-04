@@ -4,6 +4,8 @@
 
 VENV 		= .venv
 VENV_PATH 	= $(VENV)/bin
+MAP			= ./maps/hard/02_capacity_hell.txt
+ARGS		?= $(MAP)
 
 PYTHON		?= python3
 FLAKE8 		?= flake8
