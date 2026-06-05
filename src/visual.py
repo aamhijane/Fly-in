@@ -73,7 +73,18 @@ class Visualizer:
         self.max_turn = max(a[-1][0] for a in max_t) if max_t else 0
 
     def zone_color(self, zone: Zone) -> str:
-        """Return the ANSI color code for a zone based on its type."""
+        """Return the ANSI color code based on metadata or type."""
+        if zone.color:
+            c = zone.color.lower()
+            if c == "green":
+                return GREEN
+            if c == "red":
+                return RED
+            if c == "blue":
+                return BLUE
+            if c == "yellow":
+                return YELLOW
+
         if (zone.name == self.map_data.start_hub.name
                 or zone.name == self.map_data.end_hub.name):
             return GREEN

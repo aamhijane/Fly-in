@@ -51,7 +51,13 @@ def main() -> None:
         map_data, sim.schedule,
         sim.output_lines, positions_per_turn,
     )
-    visualizer.run()
+    try:
+        visualizer.run()
+    except KeyboardInterrupt:
+        print("==================================")
+        print("========= Program closed =========")
+        print("==================================")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
